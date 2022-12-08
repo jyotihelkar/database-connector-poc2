@@ -1,0 +1,25 @@
+#%RAML 1.0 DataType
+
+type: object
+description: json object with table creation fields
+properties:
+  inventory:
+    description: table name
+    type: object
+    properties:
+      id:
+        description: unique id, primary key
+        type: string
+        required: false
+      product:
+        description: product value
+        type: string
+        required: false
+      quantity:
+        description: product quantity
+        type: integer
+        required: false
+      price:
+        description: price of the product
+        type: number
+        required: false

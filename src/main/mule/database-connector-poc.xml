@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd">
+    <http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="51df426b-815b-4d87-9d33-1a80c64ef5e7" basePath="/test">
+        <http:listener-connection host="localhost" port="8081" />
+    </http:listener-config>
+    <db:config name="Database_Config" doc:name="Database Config" doc:id="d47c44cc-b2cf-4990-8bc0-6a905f9a2676">
+        <db:my-sql-connection host="localhost" port="3306" user="root" password="Nimujyo_29" database="mysql" />
+    </db:config>
+    <apikit:config name="Router" api="database-connector-poc.raml.raml" outboundHeadersMapName="outboundHeadersMapName" httpStatusVarName="httpStatus" />
+    <flow name="database-connector-pocFlow" doc:id="338b6a47-e21a-4017-8665-d1df23cbb0f6">
+        <http:listener doc:name="Listener" doc:id="b5318a38-5459-4c1d-b58c-1b639dcd7bfc" config-ref="HTTP_Listener_config" path="/*" />
+        <apikit:router doc:name="APIkit Router" doc:id="19a39483-a8e1-405d-a177-4a631f7b9596" config-ref="Router" />
+    </flow>
+    <flow name="post:\createTable:application\json:Router">
+		<db:execute-ddl doc:name="Execute DDL" doc:id="0a9c829f-8d4a-433d-984a-20557f1c59eb" config-ref="Database_Config">
+			<db:sql><![CDATA[CREATE TABLE inventory (
+    id INT PRIMARY KEY,
+    product VARCHAR(50) UNIQUE,
+    quantity INT,
+    price DECIMAL(18,2)
+)]]></db:sql>
+		</db:execute-ddl>
+		<logger level="INFO" message="post:\createTable:application\json:Router" />
+		<ee:transform doc:name="Transform Message" doc:id="d5b86024-1248-4907-9a89-4a79e2ef4ec4">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output text/plain
+---
+"table created successfully"]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+    <flow name="post:\insert:application\json:Router">
+		<logger level="INFO" message="post:\insert:application\json:Router" />
+		<db:insert doc:name="Insert" doc:id="ada2e675-e923-4acf-9a99-7eebd489c8a4" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO inventory
+VALUES(:id, :product, :quantity, :price)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id" : payload.inventory.id,
+	"product" : payload.inventory.product,
+	"quantity" : payload.inventory.quantity,
+	"price" : payload.inventory.price
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="05046c73-5058-4716-a19b-6016b30e9d4f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+"row inserted"]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+</mule>

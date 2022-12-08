@@ -1,0 +1,28 @@
+#%RAML 1.0
+
+types:
+  newtype:
+    type: !include types/insert-table.raml
+title: database-connector-poc
+version: v1
+description: API to do CRUD operations on table
+
+/createTable:
+  description: Endpoint to create table into the MySQL database by using DDL command
+  post:
+    body:
+      application/json:
+        type: !include types/create-table.raml 
+/insert:
+  post:
+    body:
+      application/json:
+        type: !include types/insert-table.raml
+        examples:
+          example: !include examples/insert-table.json
+    responses:
+      200:
+        body:
+          application/json:
+            type: object
+               

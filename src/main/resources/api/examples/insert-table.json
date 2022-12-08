@@ -1,0 +1,9 @@
+{ 
+	"inventory":
+	{
+		"id" : "12345",
+		"product" : "test1",
+		"quantity" : 2,
+		"price" :  100
+	} 
+}
